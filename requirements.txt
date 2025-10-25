@@ -1,0 +1,14 @@
+# Traffic Light Detection (YOLOv8) runtime
+# Use CPU wheels for PyTorch (change to cu121 etc. if you have NVIDIA CUDA)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+ultralytics==8.3.218
+torch==2.9.0
+torchvision==0.24.0
+
+opencv-python>=4.8,<5.0
+numpy>=1.24,<3.0
+pillow>=10.0
+
+# Sometimes pulled by Ultralytics; add explicitly to avoid surprises
+ultralytics-thop>=2.0.17
