@@ -1,0 +1,4 @@
+outputs:
+  - name: output0
+    dequantize: true
+    format: yolov8 w_scale=640 h_scale=640
