@@ -1,0 +1,36 @@
+# Ignore Python build and install artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore build directories
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Ignore venvs
+venv/
+env/
+.tflite_env_39/
+.tflite_env_39/*
+tflite_env_39/
+tflite_env_39/*
+
+# Ignore any CPython compiled libs
+*.cpython-*
+*.so
+
+Python-3.10.14
+
+# Ignore VSCode settings
+.vscode/
+
+tflite_env/
+
+# Ignore logs
+*.log
+Python-3.10.14.tgz
+tflite_runtime-2.5.0.post1-cp39-cp39-linux_aarch64.whl
+tflite
