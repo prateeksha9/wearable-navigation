@@ -34,12 +34,14 @@ At a high level, the wearable system:
   - Monitor motion and orientation
   - Detect potential **fall events** based on sudden changes in acceleration and movement
 
-- Uses a **vibration motor** (and optional buzzer / audio):
-  - To indicate obstacle proximity
+- Uses a **vibration motor and buzzer**:
+  - To indicate obstacle proximity and navigation cues
   - To signal when it is unsafe or safe to cross a street
-  - To give distinct patterns for special events (e.g., fall detected)
+  - To give distinct patterns for special events (e.g., fall detected), where the **buzzer sounds loudly** to alert nearby people
 
-- Can send an **SOS alert** (for example via an SMS API) if a fall is detected and not canceled, so that a guardian or emergency contact can be notified.
+- Can send an **SOS alert** via **Twilio SMS** if a fall is detected and not canceled:
+  - A **text message** is sent to a **preconfigured emergency contact or close connection**
+  - At the same time, the **buzzer goes off** to alert people nearby that the user may need help
 
 All of this runs **locally on the Astra SL1680 board**, so the system can operate **offline** and does not need a continuous internet connection for its core navigation behavior.
 
@@ -61,8 +63,8 @@ The main hardware components in the project are:
 - **IMU sensor**  
   Firmly attached to the vest, it tracks motion and orientation. Its data is used to infer whether the user has fallen.
 
-- **Vibration motor (and optional buzzer)**  
-  Provides haptic (and optional audio) feedback to the user for navigation and safety cues.
+- **Vibration motor and buzzer**  
+  The vibration motor provides discreet haptic feedback for navigation and proximity alerts. The buzzer provides **audible alerts**, especially during **fall events**, so that people nearby are alerted while the system sends an SOS SMS to the emergency contact.
 
 - **Battery pack and wiring inside a vest**  
   Powers the Astra board, camera, sensors, and feedback devices, and is all integrated into a wearable vest-form factor.
@@ -88,7 +90,9 @@ The main hardware components in the project are:
 
    and decides what “state” the system is in (e.g., normal walking, near obstacle, waiting to cross, safe to cross, fall detected).
 
-6. Based on the current state, the system activates the **vibration motor** (and optionally audio) with different patterns, and in the case of a fall, can trigger an **SOS alert** after a short confirmation period.
+6. Based on the current state, the system activates the **vibration motor** (and buzzer/audio) with different patterns. In the case of a **fall detected and confirmed**:
+   - The **buzzer is activated** to draw attention from people nearby.  
+   - An **SOS SMS is sent via Twilio** to a configured emergency contact, providing a remote alert that the user may need help.
 
 This design keeps inference and decision-making **on the edge**, enabling faster and more reliable responses than a cloud-dependent solution.
 
@@ -147,3 +151,4 @@ This design keeps inference and decision-making **on the edge**, enabling faster
 - Sauryadeep Pal (Synaptics AI Solutions Engineer)  
 
 Project completed as part of the MECPS capstone at the University of California, Irvine.
+```
