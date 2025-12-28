@@ -1,154 +1,336 @@
-# Edge-AI Navigation Assistant on Synaptics Astra SL1680
+# Edge-AI Navigation Assistant on Synaptics Astra SL1680 (VS680 NPU)
 
-This project is a wearable navigation and safety assistant for visually impaired users, built on the **Synaptics Astra SL1680 (VS680 NPU)** edge-AI platform. It combines embedded computer vision, ultrasonic distance sensing, and IMU-based fall detection into a single, fully on-device system. The aim is to **enhance**, not replace, the white cane by adding scene understanding and safety alerts.
+A wearable navigation and safety assistant for visually impaired users built on the **Synaptics Astra SL1680 (VS680 NPU)** edge-AI platform. The system fuses **on-device vision (3 INT8 models)**, **ultrasonic ranging**, and an **MPU6050 IMU fall detector** into a single wearable prototype that runs **offline, fully on-device**, and in real time.
 
----
-
-## Project Overview
-
-Visually impaired users often rely on a white cane, which is excellent for detecting obstacles at ground level but offers no information about:
-
-- Traffic lights and their current state  
-- Pedestrian crossing signals  
-- Moving vehicles, bikes, and other dynamic obstacles  
-- Overhead or mid-level obstacles (e.g., signboards, edges of trucks, etc.)
-
-This project addresses those gaps by using a **head-mounted camera** connected to the Astra SL1680 board, running multiple AI models on the NPU to understand the environment in real time. The system then provides **intuitive feedback** through a **vibration motor** (and optionally audio) and can trigger an **SOS alert** if a fall is detected.
+> **“Feels like a cane, thinks like an AI camera.”**
 
 ---
 
-## What the System Does
+## Authors
+- **Yash Daniel Ingle**
+- **Hridya Satish Pisharady**
+- **Prateeksha Ranjan**
 
-At a high level, the wearable system:
-
-- Uses a **camera** to capture the user’s surroundings and runs **three vision models** on the Astra’s NPU to:
-  - Detect the state of **traffic lights** (e.g., red / yellow / green)
-  - Recognize **pedestrian signals** (e.g., WALK / DON’T WALK)
-  - Identify critical objects in the **surroundings** (e.g., people, vehicles, obstacles)
-
-- Uses an **ultrasonic distance sensor** on the vest to:
-  - Measure the distance to near-field obstacles directly in front of the user
-  - Trigger haptic feedback when the user is too close to an obstacle
-
-- Uses an **IMU sensor** on the vest to:
-  - Monitor motion and orientation
-  - Detect potential **fall events** based on sudden changes in acceleration and movement
-
-- Uses a **vibration motor and buzzer**:
-  - To indicate obstacle proximity and navigation cues
-  - To signal when it is unsafe or safe to cross a street
-  - To give distinct patterns for special events (e.g., fall detected), where the **buzzer sounds loudly** to alert nearby people
-
-- Can send an **SOS alert** via **Twilio SMS** if a fall is detected and not canceled:
-  - A **text message** is sent to a **preconfigured emergency contact or close connection**
-  - At the same time, the **buzzer goes off** to alert people nearby that the user may need help
-
-All of this runs **locally on the Astra SL1680 board**, so the system can operate **offline** and does not need a continuous internet connection for its core navigation behavior.
-
----
-
-## Hardware at a Glance
-
-The main hardware components in the project are:
-
-- **Synaptics Astra SL1680 (VS680) board**  
-  The central embedded AI platform that runs the vision models on its NPU and coordinates all sensors and outputs.
-
-- **Head-mounted camera**  
-  Mounted on a cap, visor, or headband and connected to Astra. It provides a live video feed aligned with the user’s view.
-
-- **Ultrasonic distance sensor**  
-  Mounted on the vest and facing forward, it measures the distance to obstacles in front of the user to give short-range safety information.
-
-- **IMU sensor**  
-  Firmly attached to the vest, it tracks motion and orientation. Its data is used to infer whether the user has fallen.
-
-- **Vibration motor and buzzer**  
-  The vibration motor provides discreet haptic feedback for navigation and proximity alerts. The buzzer provides **audible alerts**, especially during **fall events**, so that people nearby are alerted while the system sends an SOS SMS to the emergency contact.
-
-- **Battery pack and wiring inside a vest**  
-  Powers the Astra board, camera, sensors, and feedback devices, and is all integrated into a wearable vest-form factor.
-
----
-
-## High-Level System Behavior
-
-1. The **camera** streams video to the Astra SL1680.  
-2. The **three vision models** run on the NPU, frame by frame, and output:
-   - Traffic light status  
-   - Pedestrian signal status  
-   - Surroundings / objects of interest  
-
-3. The **ultrasonic sensor** continuously measures distance in front of the user and identifies when something is too close.  
-
-4. The **IMU** continuously reports motion data, which is used to detect patterns that look like a fall (e.g., sudden impact followed by little movement).  
-
-5. A **finite state machine (FSM)** combines:
-   - The outputs of the three vision models  
-   - Ultrasonic distance  
-   - IMU-based motion / fall state  
-
-   and decides what “state” the system is in (e.g., normal walking, near obstacle, waiting to cross, safe to cross, fall detected).
-
-6. Based on the current state, the system activates the **vibration motor** (and buzzer/audio) with different patterns. In the case of a **fall detected and confirmed**:
-   - The **buzzer is activated** to draw attention from people nearby.  
-   - An **SOS SMS is sent via Twilio** to a configured emergency contact, providing a remote alert that the user may need help.
-
-This design keeps inference and decision-making **on the edge**, enabling faster and more reliable responses than a cloud-dependent solution.
-
----
-
-## Synaptics Astra SL1680 Board Layout
-
-*(Add your own image file link below – for example an exported board layout / top view of the Astra board)*
-
-![Synaptics Astra SL1680 Board Layout]()
-
----
-
-## Final Assembled Circuit (Soldered)
-
-*(Add your own image file link below – for example the fully soldered circuit or assembly in your project)*
-
-![Final Assembled Circuit]()
-
----
-
-## Wearable Vest with Integrated System
-
-*(Add your own image file link below – for example a photo of the vest being worn or laid out flat with components visible)*
-
-![Wearable Vest Front View]()
-
----
-
-## System FSM Diagram
-
-*(Add your own image file link below – for example the finite state machine diagram exported from your poster or slides)*
-
-![System FSM Diagram]()
-
----
-
-## Demo Video
-
-*(Paste your demo video URL in the link below)*
-
-[👉 Watch the demo video here](PASTE_YOUR_DEMO_VIDEO_LINK_HERE)
-
----
-
-## Credits
-
-**Project Team**  
-- Prateeksha Ranjan  
-- Hridya Satish Pisharady  
-- Yash Daniel Ingle  
-
-**Advisors / Mentors**  
+### Advisors
 - Prof. Salma Elmalaki  
 - Prof. Quoc-Viet Dang  
-- Sauryadeep Pal (Synaptics AI Solutions Engineer)  
+- Sauryadeep Pal (Synaptics AI Solutions Engineer)
 
-Project completed as part of the MECPS capstone at the University of California, Irvine.
+**University of California, Irvine — MECPS Capstone**
+
+---
+
+## Wearable Prototype (Photo)
+
+![Wearable prototype](src/assets/images/vest_capstone.jpg)
+
+---
+
+## Table of Contents
+- [1. Abstract](#1-abstract)
+- [2. Motivation](#2-motivation)
+- [3. What the System Does](#3-what-the-system-does)
+- [4. High-Level System Behavior](#4-high-level-system-behavior)
+- [5. System Architecture](#5-system-architecture)
+- [6. Finite State Machine](#6-finite-state-machine)
+- [7. Hardware](#7-hardware)
+  - [7.1 Hardware at a Glance](#71-hardware-at-a-glance)
+  - [7.2 Bill of Materials](#72-bill-of-materials)
+  - [7.3 GPIO Map (Verified)](#73-gpio-map-verified)
+  - [7.4 Build Photos (Integration)](#74-build-photos-integration)
+- [8. Software Stack](#8-software-stack)
+- [9. Repository Structure](#9-repository-structure)
+- [10. Vision Models](#10-vision-models)
+  - [10.1 Why 3 Models (Not 1)](#101-why-3-models-not-1)
+  - [10.2 Model Responsibilities](#102-model-responsibilities)
+  - [10.3 Model Overview (Walk-Sign Branch)](#103-model-overview-walk-sign-branch)
+  - [10.4 Datasets & Training Workflow](#104-datasets--training-workflow)
+  - [10.5 Conversion: TFLite → .synap (Docker)](#105-conversion-tflite--synap-docker)
+  - [10.6 On-Device Vision Runtime Loop (Astra)](#106-on-device-vision-runtime-loop-astra)
+- [11. Astra Board Setup + Deployment (Step-by-Step Commands)](#11-astra-board-setup--deployment-step-by-step-commands)
+- [12. Sensors & Feedback](#12-sensors--feedback)
+- [13. Benchmarking (Raspberry Pi vs Astra NPU)](#13-benchmarking-raspberry-pi-vs-astra-npu)
+- [14. Demo](#14-demo)
+- [15. Branch Purpose: Walk-Sign](#15-branch-purpose-walk-sign)
+- [16. Troubleshooting](#16-troubleshooting)
+- [17. Roadmap / Future Work](#17-roadmap--future-work)
+- [18. Credits](#18-credits)
+
+---
+
+## 1. Abstract
+
+Visually impaired users commonly rely on a white cane. It is extremely reliable for detecting **ground-level obstacles**, but it provides little to no **semantic context**, such as traffic light states, pedestrian walk signals, dynamic hazards, or mid-level obstacles.
+
+This project augments the cane by adding **scene understanding and safety alerts** using the **Synaptics Astra SL1680 (VS680 NPU)**. All inference and decision-making run **fully on-device**, enabling low latency, offline operation, and privacy.
+
+---
+
+## 2. Motivation
+
+![Motivation scene](src/assets/images/Picture2.png)
+
+Design goals:
+- Offline-first operation
+- Low-latency safety cues
+- Privacy-preserving on-device vision
+- Simple, wearable feedback mechanisms
+
+---
+
+## 3. What the System Does
+
+![System overview](src/assets/images/Picture3.png)
+
+![Inside the wearable](src/assets/images/Picture4.png)
+
+The system:
+1. Sees using a head-mounted camera and NPU
+2. Senses distance via ultrasonic ranging
+3. Detects motion patterns using an IMU
+4. Fuses all signals via an FSM and alerts the user
+
+---
+
+## 4. High-Level System Behavior
+
+1. Camera streams frames to Astra
+2. Three INT8 vision models run on the VS680 NPU
+3. Ultrasonic sensor measures front distance
+4. IMU monitors motion patterns
+5. FSM fuses all inputs
+6. Haptic, buzzer, or audio feedback is triggered
+7. SOS SMS is sent on confirmed fall
+
+---
+
+## 5. System Architecture
+
+![Poster overview](src/assets/images/poster_p01.png)
+
+![Layered architecture](src/assets/images/report_p09.png)
+
+![Wearable placement](src/assets/images/Picture1.png)
+
+---
+
+## 6. Finite State Machine
+
+![FSM diagram](src/assets/images/FSM.png)
+
+States:
+- IDLE / WALKING
+- CROSSING
+- OBSTACLE
+- EMERGENCY
+
+---
+
+## 7. Hardware
+
+### 7.1 Hardware at a Glance
+
+![Astra board](src/assets/images/board_pic.png)
+
+- Synaptics Astra SL1680 (VS680 NPU)
+- USB camera
+- HC-SR04 ultrasonic sensor
+- MPU6050 IMU
+- Vibration motor
+- Active buzzer
+- Battery pack
+
+---
+
+### 7.2 Bill of Materials
+
+| Component | Purpose |
+|---|---|
+| Astra SL1680 | Edge AI compute |
+| USB Camera | Scene capture |
+| HC-SR04 | Distance sensing |
+| MPU6050 | Fall detection |
+| Vibration motor | Haptic feedback |
+| Buzzer | Emergency alert |
+
+---
+
+### 7.3 GPIO Map (Verified)
+
+| Function | GPIO |
+|---|---:|
+| Ultrasonic TRIG | 426 |
+| Ultrasonic ECHO | 485 |
+| Haptic Motor | 484 |
+| Buzzer | 450 |
+| Debug LED | 423 |
+
+```bash
+cat /sys/kernel/debug/gpio
 ```
+
+---
+
+### 7.4 Build Photos (Integration)
+
+![Prototype wiring](src/assets/images/report_p26.png)
+
+![Integrated circuit](src/assets/images/report_p38.png)
+
+---
+
+## 8. Software Stack
+
+![Vision stack](src/assets/images/vision_stack.png)
+
+**On-device:** Yocto Linux, SyNAP runtime, Python, OpenCV  
+**Development:** Roboflow, YOLOv8, INT8 TFLite, Docker SDK
+
+---
+
+## 9. Repository Structure
+
+```text
+wearable-navigation/
+├── README.md
+├── docs/
+├── models/
+├── scripts/
+├── src/
+│   ├── assets/images/
+│   ├── vision/
+│   ├── sensors/
+│   ├── feedback/
+│   └── fsm/
+└── Walk-Sign/
+```
+
+---
+
+## 10. Vision Models
+
+### 10.1 Why 3 Models
+
+Modularity, predictable latency, easier debugging, and stable NPU scheduling.
+
+---
+
+### 10.2 Model Responsibilities
+
+- Traffic Light Model
+- Walk-Sign Model
+- Surroundings Model
+
+---
+
+### 10.3 Model Overview
+
+Input: 224×224×3 INT8  
+Output: Detection head `[1, 11, 1029]`
+
+---
+
+### 10.4 Datasets & Training Workflow
+
+![Data collection and training workflow](src/assets/images/Data_collection_training.png)
+
+![Training to Synap pipeline](src/assets/images/Training_to_synap.png)
+
+![Training evaluation 1](src/assets/images/report_p14.png)
+
+![Training evaluation 2](src/assets/images/report_p15.png)
+
+---
+
+### 10.5 Conversion: TFLite → .synap (Docker)
+
+```bash
+docker run -it --rm \
+  -v D:/Synap:/workspace \
+  synapticsas/synap-sdk:1.7 \
+  /bin/bash
+```
+
+```bash
+synap convert \
+  --model capstone-synap_v1.tflite \
+  --target VS680 \
+  --out-dir out/rf_v1
+```
+
+---
+
+### 10.6 On-Device Vision Runtime Loop
+
+![Vision loop](src/assets/images/vision_loop.png)
+
+---
+
+## 11. Astra Board Setup + Deployment
+
+```bash
+ssh root@<BOARD_IP>
+```
+
+---
+
+## 12. Sensors & Feedback
+
+- Ultrasonic → proximity vibration
+- IMU → fall detection
+- Buzzer + SMS → emergency alert
+
+---
+
+## 13. Benchmarking (Raspberry Pi vs Astra NPU)
+
+![Benchmark setup](src/assets/images/bench_mark_setup.png)
+
+![Raspberry Pi plots](src/assets/images/report_p44.png)
+
+![Astra plots](src/assets/images/report_p46.png)
+
+![Summary](src/assets/images/report_p48.png)
+
+---
+
+## 14. Demo
+
+PASTE_YOUR_DEMO_VIDEO_LINK_HERE
+
+---
+
+## 15. Branch Purpose: Walk-Sign
+
+Contains `.synap` artifacts and conversion references.
+
+---
+
+## 16. Troubleshooting
+
+```bash
+ls -l /dev/video*
+```
+
+---
+
+## 17. Roadmap / Future Work
+
+![Future work](src/assets/images/Future_dir.png)
+
+- GStreamer pipeline
+- Improved fall detection
+- Custom PCB
+- Field testing
+
+---
+
+## 18. Credits
+
+**Project Team**
+- Prateeksha Ranjan
+- Hridya Satish Pisharady
+- Yash Daniel Ingle
+
+**University of California, Irvine — MECPS Capstone**
+
