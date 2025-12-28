@@ -1,9 +1,0 @@
-Crosswalk
-Don-t Walk
-Don't Walk
-Green
-Red
-Traffic Signal
-Walk
-Yellow
-null

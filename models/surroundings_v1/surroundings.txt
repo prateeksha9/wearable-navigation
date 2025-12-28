@@ -1,4 +1,0 @@
-bike
-e-scooter
-Person
-vehicles

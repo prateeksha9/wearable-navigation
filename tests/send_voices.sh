@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LAPTOP_IP="192.168.137.196"
+LAPTOP_IP="10.8.119.207"
 
 echo "shashwat bhen ki lund" | nc $LAPTOP_IP 5005
 echo "[Board] Sent: AWW TO TO → $LAPTOP_IP"
