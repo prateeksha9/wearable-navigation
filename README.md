@@ -296,7 +296,9 @@ ssh root@<BOARD_IP>
 
 ## 14. Demo
 
-PASTE_YOUR_DEMO_VIDEO_LINK_HERE
+Please click on the link to watch our Demo:
+
+https://drive.google.com/file/d/1C7k-bBPpG6qBB767Rn2t1zzEgUxnandg/view?usp=drive_link
 
 ---
 
