@@ -1,4 +1,3 @@
-````md
 # Edge-AI Navigation Assistant on Synaptics Astra SL1680 (VS680 NPU)
 
 A wearable navigation and safety assistant for visually impaired users built on the **Synaptics Astra SL1680 (VS680 NPU)** edge-AI platform. The system fuses **on-device vision (3 INT8 models)**, **ultrasonic ranging**, and an **MPU6050 IMU fall detector** into a single wearable prototype that runs **offline, fully on-device**, and in real time.
@@ -334,4 +333,4 @@ ls -l /dev/video*
 - Yash Daniel Ingle
 
 **University of California, Irvine — MECPS Capstone**
-````
+
