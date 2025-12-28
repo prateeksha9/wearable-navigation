@@ -11,6 +11,13 @@ A wearable navigation and safety assistant for visually impaired users built on 
 - **Hridya Satish Pisharady**
 - **Prateeksha Ranjan**
 
+### Advisors
+
+* Prof. Salma Elmalaki
+* Prof. Quoc-Viet Dang
+* Sauryadeep Pal (Synaptics AI Solutions Engineer)
+
+**University of California, Irvine — MECPS Capstone**
 ---
 
 ## Table of Contents
@@ -278,7 +285,7 @@ Typical workflow:
 4. convert TFLite → `.synap`  
 5. deploy and validate on Astra (image tests + live video)
 
-![Dataset + training flow](assets/images/report_p16.png)
+![Dataset + training flow](src/assets/images/report_p16.png)
 
 ---
 
@@ -293,127 +300,252 @@ docker run -it --rm \
   /bin/bash
 
 
+You’re **100% right** to be annoyed here — and thanks for calling it out clearly.
 
-## 2️⃣ Inside Docker – Convert `.tflite` → `.synap`
+### Important correction first (very important) ⚠️
 
-Inside the Synaptics SDK Docker container, convert the INT8 TFLite model into a VS680-compatible `.synap` binary.
+For a **GitHub README**, you **do NOT want YAML**.
+
+* **YAML** = configuration files (`.yml`, `.yaml`)
+* **README.md** = **Markdown**, not YAML
+
+If you put the README content in YAML:
+
+* ❌ GitHub will render it as a **code block**
+* ❌ Headings, images, links will **NOT render**
+* ❌ Recruiters/professors will see a blob of text
+
+What you actually want is:
+
+> **Clean, pure GitHub-native Markdown**
+> ✔ No nested `md blocks  
+> ✔ No mixed formatting  
+> ✔ Only `bash for commands
+> ✔ Normal headings (`##`, `###`)
+> ✔ Normal image links
+
+Below is the **FIXED, CLEAN, CONSISTENT MARKDOWN** version of **Sections 10.3 → 18**, exactly how it should appear in `README.md`.
+
+You can **copy–paste this directly**.
+No YAML. No UI junk. No meta text.
+
+---
+
+## ✅ FINAL CLEAN VERSION (GitHub README–READY)
+
+---
+
+### 10.3 Datasets & Training Workflow
+
+The vision models follow a standard, reproducible edge-AI workflow optimized for deployment on the Synaptics VS680 NPU.
+
+**Typical workflow:**
+
+1. Collect and label images in **Roboflow**
+2. Train **YOLOv8** models:
+
+   * Traffic light
+   * Walk / Don’t-Walk signal
+   * Surroundings (people, vehicles, obstacles)
+3. Export trained models to **INT8 TensorFlow Lite**
+4. Convert TFLite → **`.synap`** (VS680 compatible)
+5. Deploy and validate on Astra:
+
+   * Static image tests
+   * Live camera inference
+
+**Dataset & training flow diagram:**
+
+![Dataset and training workflow](src/assets/images/report_p16.png)
+
+---
+
+### 10.4 Conversion Environment (Docker Setup)
+
+Model conversion is performed inside the official **Synaptics SyNAP SDK Docker container** to ensure compatibility with the VS680 NPU.
+
+#### 10.4.1 Launch the Synaptics SDK Docker Image
+
+Run this command on the **host PC** where the `.tflite` model is stored:
+
+```bash
+docker run -it --rm \
+  -v D:/Synap:/workspace \
+  synapticsas/synap-sdk:1.7 \
+  /bin/bash
+```
+
+This mounts the host directory (`D:/Synap`) into the container at `/workspace`.
+
+---
+
+#### 10.4.2 Inside Docker – Convert `.tflite` → `.synap`
+
+Once inside the Docker container:
 
 ```bash
 cd /workspace
+
 synap convert \
   --model capstone-synap_v1.tflite \
   --target VS680 \
   --out-dir out/rf_v1
+```
 
-This generates the following artifacts inside out/rf_v1/:
+**Generated artifacts (`out/rf_v1/`):**
 
-    model.synap
+* `model.synap` — compiled VS680 NPU binary
+* `model_info.txt` — model metadata (I/O shapes, precision)
+* `labels.txt` (optional) — class label mapping
 
-    model_info.txt
+---
 
-    (optional) labels.txt
+## 11. Astra Board Setup + Deployment (Step-by-Step Commands)
 
-11. Astra Board Setup + Deployment (Step-by-Step Commands)
+This section documents the **exact commands** required to bring up the Astra board, deploy models, and verify inference.
 
-    Replace placeholders like <BOARD_IP> and <SSID> with your actual values.
+> Replace placeholders like `<BOARD_IP>` and `<SSID>` with your actual values.
 
-11.1 SSH into Astra
+---
 
+### 11.1 SSH into Astra
+
+```bash
 ssh root@<BOARD_IP>
+```
 
-11.2 Wi-Fi Setup on Astra
+Verify system information:
 
-Bring up the Wi-Fi interface and obtain an IP address.
+```bash
+uname -a
+cat /etc/os-release
+```
 
+---
+
+### 11.2 Wi-Fi Setup on Astra
+
+Bring up the Wi-Fi interface and obtain an IP address:
+
+```bash
 ip link set wlan0 up
 wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf
 udhcpc -i wlan0
+```
 
 Verify connectivity:
 
+```bash
 ip addr show wlan0
 ping -c 3 8.8.8.8
+```
 
-11.3 Copy Models to Astra
+---
 
-From the host PC, copy the converted model directory to the Astra board:
+### 11.3 Copy Model Artifacts to Astra
 
+From the **host PC**:
+
+```bash
 scp -r out/rf_v1 root@<BOARD_IP>:/home/root/models/
+```
 
-11.4 Sanity Test (On Astra)
+---
 
-On the Astra board, verify inference works.
+### 11.4 Verify Model Files on Astra
 
+```bash
 cd /home/root/models/rf_v1
+ls -lh
+```
 
-# Run inference with random input
+Expected files:
+
+* `model.synap`
+* `model_info.txt`
+* `labels.txt` (if present)
+* Sample images (`*.jpg`)
+
+---
+
+### 11.5 Run Sanity Inference Test
+
+```bash
 synap_cli -m model.synap random
+```
 
-# Run object-detection inference on a test image
+Expected:
+
+* Successful model load
+* Inference latency summary
+* Tensor statistics
+
+---
+
+### 11.6 Run Object Detection Image Test
+
+```bash
 synap_cli_od -m model.synap red.jpg --out red_out.jpg
+```
 
-If needed, copy the output image back to the host:
+(Optional) Copy result back to host:
 
+```bash
 scp root@<BOARD_IP>:/home/root/models/rf_v1/red_out.jpg .
+```
 
-12. Sensors & Feedback
+---
 
-    Ultrasonic sensor → haptic proximity alerts
+## 12. Sensors & Feedback
 
-    IMU (MPU6050) → fall detection → buzzer + SMS (Twilio)
+* **Ultrasonic sensor** → haptic proximity alerts
+* **MPU6050 IMU** → fall detection → buzzer + SMS (Twilio)
+* **Optional audio** → semantic cues (traffic light / walk signal)
 
-    Optional audio → semantic feedback (traffic light / walk signal)
+---
 
-13. Benchmarking
+## 13. Benchmarking
 
-Benchmark results and plots are documented in the project report and included in the assets/images/ directory.
-14. Demo
+Benchmark plots and latency comparisons:
 
-🎥 Demo video:
+![Benchmark summary](src/assets/images/report_p48.png)
+
+---
+
+## 14. Demo
+
+🎥 **Demo video:**
 PASTE_YOUR_DEMO_VIDEO_LINK_HERE
-15. Branch Purpose: Walk-Sign
 
-The Walk-Sign branch is dedicated to:
+---
 
-    Hosting Synaptics model artifacts (.synap)
+## 15. Branch Purpose: `Walk-Sign`
 
-    Demonstrating end-to-end conversion and deployment
+The `Walk-Sign` branch is dedicated to:
 
-    Providing a reusable template for future object-detection models on Astra
+* Hosting converted Synaptics model artifacts (`.synap`)
+* Demonstrating end-to-end conversion and deployment
+* Serving as a reusable template for future object-detection models on Astra
 
-16. Troubleshooting
+---
 
-    Reconvert the model if you see “Unknown object detection format”
+## 16. Troubleshooting
 
-    Verify GPIO export/unexport if sensors do not respond
+* Reconvert the model if object-detection format errors occur
+* Verify GPIO export/unexport if sensors do not respond
+* Confirm camera availability at `/dev/video0`
 
-    Check camera availability at /dev/video0
+---
 
-17. Roadmap / Future Work
+## 17. Roadmap / Future Work
 
-    GStreamer-based live camera pipeline
+* GStreamer-based live camera pipeline
+* Improved fall-detection tuning
+* Custom PCB and enclosure
+* Field testing with visually impaired users
 
-    Improved fall detection tuning
+---
 
-    Custom PCB and enclosure
 
-    Field testing with visually impaired users
 
-18. Credits
-Project Team
 
-    Prateeksha Ranjan
-
-    Hridya Satish Pisharady
-
-    Yash Daniel Ingle
-
-Advisors
-
-    Prof. Salma Elmalaki
-
-    Prof. Quoc-Viet Dang
-
-    Sauryadeep Pal (Synaptics AI Solutions Engineer)
-
-University of California, Irvine — MECPS Capstone
